@@ -1,5 +1,0 @@
-{
-  "name": "GhostCursor AI",
-  "description": "An autonomous UI environment where a 'Ghost Cursor' moves automatically, exploring windows and drawing on canvases using Gemini-driven intent.",
-  "requestFramePermissions": []
-}

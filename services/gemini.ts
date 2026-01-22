@@ -1,7 +1,9 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// We initialize the AI inside the service call to ensure process.env.API_KEY is available 
+// and doesn't cause a top-level ReferenceError if 'process' isn't shimmed in time.
+const getAI = () => new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const getNextAutonomousActions = async (
   currentWindows: string[],
@@ -18,10 +20,12 @@ export const getNextAutonomousActions = async (
     - CLICK: Click the current position or a target.
     - DRAW: A series of points representing a shape on the 'Whiteboard'.
     
-    Make the behavior look curious and purposeful.
+    Make the behavior look curious and purposeful. For MOVE, provide specific x,y coordinates or a window target name.
+    For DRAW, provide a path of relative 0-1 coordinates for the whiteboard.
   `;
 
   try {
+    const ai = getAI();
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
       contents: prompt,
@@ -71,6 +75,13 @@ export const getNextAutonomousActions = async (
     return data.actions;
   } catch (error) {
     console.error("Gemini failed to generate intent:", error);
-    return [];
+    // Return a default "wandering" move if AI fails
+    return [{
+      type: 'MOVE',
+      position: { 
+        x: Math.random() * screenSize.width, 
+        y: Math.random() * screenSize.height 
+      }
+    }];
   }
 };
